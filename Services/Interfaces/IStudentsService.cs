@@ -1,6 +1,6 @@
 ﻿using Model;
 
-namespace Services.Interfaces
+namespace Services
 {
     public interface IStudentsService
     {

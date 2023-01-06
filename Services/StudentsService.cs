@@ -1,6 +1,5 @@
 ﻿using Model;
 using Infrastructure;
-using Services.Interfaces;
 
 namespace Services
 {

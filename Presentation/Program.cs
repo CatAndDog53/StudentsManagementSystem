@@ -1,4 +1,6 @@
+using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Services;
 
 namespace Presentation
 {
@@ -12,6 +14,12 @@ namespace Presentation
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<Infrastructure.CoursesDbContext>(options =>
                 options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
+            builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
+            builder.Services.AddScoped<IGroupsRepository, GroupsRepository>();
+            builder.Services.AddScoped<IStudentsRepository, StudentsRepository>();
+            builder.Services.AddScoped<ICoursesService, CoursesService>();
+            builder.Services.AddScoped<IGroupsService, GroupsService>();
+            builder.Services.AddScoped<IStudentsService, StudentsService>();
 
             var app = builder.Build();
 
@@ -32,7 +40,7 @@ namespace Presentation
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Courses}/{action=Index}/{id?}");
 
             app.Run();
         }

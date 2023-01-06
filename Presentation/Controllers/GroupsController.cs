@@ -1,40 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Infrastructure;
 using Model;
+using Services;
 
 namespace Presentation.Controllers
 {
     public class GroupsController : Controller
     {
-        private readonly CoursesDbContext _context;
+        private readonly IGroupsService _groupsService;
+        private readonly ICoursesService _coursesService;
 
-        public GroupsController(CoursesDbContext context)
+        public GroupsController(IGroupsService groupsService, ICoursesService coursesService)
         {
-            _context = context;
+            _groupsService = groupsService;
+            _coursesService = coursesService;
         }
 
-        // GET: Groups
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Groups.ToListAsync());
+            return View(await _groupsService.GetAllGroupsAsync());
         }
 
-        // GET: Groups/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Groups == null)
+            if (id == null || await _groupsService.GetAllGroupsAsync() == null)
             {
                 return NotFound();
             }
 
-            var @group = await _context.Groups
-                .FirstOrDefaultAsync(m => m.GroupId == id);
+            var @group = await _groupsService.GetGroupByIdAsync(id.GetValueOrDefault());
             if (@group == null)
             {
                 return NotFound();
@@ -43,37 +38,38 @@ namespace Presentation.Controllers
             return View(@group);
         }
 
-        // GET: Groups/Create
         public IActionResult Create()
         {
+            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+
             return View();
         }
 
-        // POST: Groups/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("GroupId,CourseId,Name")] Group @group)
         {
+            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+
             if (ModelState.IsValid)
             {
-                _context.Add(@group);
-                await _context.SaveChangesAsync();
+                _groupsService.Insert(@group);
+                await _groupsService.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(@group);
         }
 
-        // GET: Groups/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Groups == null)
+            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+
+            if (id == null || await _groupsService.GetAllGroupsAsync() == null)
             {
                 return NotFound();
             }
 
-            var @group = await _context.Groups.FindAsync(id);
+            var @group = await _groupsService.GetGroupByIdAsync(id.GetValueOrDefault());
             if (@group == null)
             {
                 return NotFound();
@@ -81,13 +77,12 @@ namespace Presentation.Controllers
             return View(@group);
         }
 
-        // POST: Groups/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("GroupId,CourseId,Name")] Group @group)
         {
+            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+
             if (id != @group.GroupId)
             {
                 return NotFound();
@@ -97,8 +92,8 @@ namespace Presentation.Controllers
             {
                 try
                 {
-                    _context.Update(@group);
-                    await _context.SaveChangesAsync();
+                    _groupsService.Update(@group);
+                    await _groupsService.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -116,16 +111,14 @@ namespace Presentation.Controllers
             return View(@group);
         }
 
-        // GET: Groups/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Groups == null)
+            if (id == null || await _groupsService.GetAllGroupsAsync() == null)
             {
                 return NotFound();
             }
 
-            var @group = await _context.Groups
-                .FirstOrDefaultAsync(m => m.GroupId == id);
+            var @group = await _groupsService.GetGroupByIdAsync(id.GetValueOrDefault());
             if (@group == null)
             {
                 return NotFound();
@@ -134,28 +127,26 @@ namespace Presentation.Controllers
             return View(@group);
         }
 
-        // POST: Groups/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Groups == null)
+            if (await _groupsService.GetAllGroupsAsync() == null)
             {
                 return Problem("Entity set 'CoursesDbContext.Groups'  is null.");
             }
-            var @group = await _context.Groups.FindAsync(id);
-            if (@group != null)
-            {
-                _context.Groups.Remove(@group);
-            }
-            
-            await _context.SaveChangesAsync();
+
+            _groupsService.Delete(id);
+
+            await _groupsService.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool GroupExists(int id)
         {
-          return _context.Groups.Any(e => e.GroupId == id);
+            if (_groupsService.GetAllGroupsAsync().Result == null)
+                return false;
+            return true;
         }
     }
 }

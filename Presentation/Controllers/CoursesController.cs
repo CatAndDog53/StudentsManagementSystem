@@ -1,40 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Infrastructure;
 using Model;
+using Services;
 
 namespace Presentation.Controllers
 {
     public class CoursesController : Controller
     {
-        private readonly CoursesDbContext _context;
+        private readonly ICoursesService _coursesService;
 
-        public CoursesController(CoursesDbContext context)
+        public CoursesController(ICoursesService coursesService)
         {
-            _context = context;
+            _coursesService = coursesService;
         }
 
-        // GET: Courses
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Courses.ToListAsync());
+            return View(await _coursesService.GetAllCoursesAsync());
         }
 
-        // GET: Courses/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Courses == null)
+            if (id == null || _coursesService.GetAllCoursesAsync() == null)
             {
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.CourseId == id);
+            var course = await _coursesService.GetCourseByIdAsync(id.GetValueOrDefault());
             if (course == null)
             {
                 return NotFound();
@@ -43,37 +35,32 @@ namespace Presentation.Controllers
             return View(course);
         }
 
-        // GET: Courses/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Courses/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CourseId,Name,Description")] Course course)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(course);
-                await _context.SaveChangesAsync();
+                _coursesService.Insert(course);
+                await _coursesService.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(course);
         }
 
-        // GET: Courses/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Courses == null)
+            if (id == null || _coursesService.GetAllCoursesAsync == null)
             {
                 return NotFound();
             }
 
-            var course = await _context.Courses.FindAsync(id);
+            var course = await _coursesService.GetCourseByIdAsync(id.GetValueOrDefault());
             if (course == null)
             {
                 return NotFound();
@@ -81,9 +68,6 @@ namespace Presentation.Controllers
             return View(course);
         }
 
-        // POST: Courses/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("CourseId,Name,Description")] Course course)
@@ -97,8 +81,8 @@ namespace Presentation.Controllers
             {
                 try
                 {
-                    _context.Update(course);
-                    await _context.SaveChangesAsync();
+                    _coursesService.Update(course);
+                    await _coursesService.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -116,16 +100,14 @@ namespace Presentation.Controllers
             return View(course);
         }
 
-        // GET: Courses/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Courses == null)
+            if (id == null || _coursesService.GetAllCoursesAsync() == null)
             {
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .FirstOrDefaultAsync(m => m.CourseId == id);
+            var course = await _coursesService.GetCourseByIdAsync(id.GetValueOrDefault());
             if (course == null)
             {
                 return NotFound();
@@ -134,28 +116,26 @@ namespace Presentation.Controllers
             return View(course);
         }
 
-        // POST: Courses/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Courses == null)
+            if (_coursesService.GetAllCoursesAsync() == null)
             {
                 return Problem("Entity set 'CoursesDbContext.Courses'  is null.");
             }
-            var course = await _context.Courses.FindAsync(id);
-            if (course != null)
-            {
-                _context.Courses.Remove(course);
-            }
-            
-            await _context.SaveChangesAsync();
+
+            _coursesService.Delete(id);
+
+            await _coursesService.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CourseExists(int id)
         {
-          return _context.Courses.Any(e => e.CourseId == id);
+            if (_coursesService.GetAllCoursesAsync() == null)
+                return false;
+            return true;
         }
     }
 }
