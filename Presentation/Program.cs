@@ -20,6 +20,7 @@ namespace Presentation
             builder.Services.AddScoped<ICoursesService, CoursesService>();
             builder.Services.AddScoped<IGroupsService, GroupsService>();
             builder.Services.AddScoped<IStudentsService, StudentsService>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
 

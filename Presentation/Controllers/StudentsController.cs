@@ -8,28 +8,26 @@ namespace Presentation.Controllers
 {
     public class StudentsController : Controller
     {
-        private readonly IStudentsService _studentsService;
-        private readonly IGroupsService _groupsService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public StudentsController(IStudentsService studentsService, IGroupsService groupsService)
+        public StudentsController(IUnitOfWork unitOfWork)
         {
-            _studentsService = studentsService;
-            _groupsService = groupsService;
+            _unitOfWork= unitOfWork;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _studentsService.GetAllStudentsAsync());
+            return View(await _unitOfWork.StudentsRepository.GetAllStudentsAsync());
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || await _studentsService.GetAllStudentsAsync() == null)
+            if (id == null || await _unitOfWork.StudentsRepository.GetAllStudentsAsync() == null)
             {
                 return NotFound();
             }
 
-            var student = await _studentsService.GetStudentByIdAsync(id.GetValueOrDefault());
+            var student = await _unitOfWork.StudentsRepository.GetStudentByIdAsync(id.GetValueOrDefault());
             if (student == null)
             {
                 return NotFound();
@@ -40,7 +38,7 @@ namespace Presentation.Controllers
 
         public IActionResult Create()
         {
-            ViewBag.Groups = new SelectList(_groupsService.GetAllGroupsAsync().Result, "GroupId", "Name");
+            ViewBag.Groups = new SelectList(_unitOfWork.GroupsRepository.GetAllGroupsAsync().Result, "GroupId", "Name");
             return View();
         }
 
@@ -48,12 +46,12 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("StudentId,GroupId,FirstName,LastName")] Student student)
         {
-            ViewBag.Groups = new SelectList(_groupsService.GetAllGroupsAsync().Result, "GroupId", "Name");
+            ViewBag.Groups = new SelectList(_unitOfWork.GroupsRepository.GetAllGroupsAsync().Result, "GroupId", "Name");
 
             if (ModelState.IsValid)
             {
-                _studentsService.Insert(student);
-                await _studentsService.SaveChangesAsync();
+                _unitOfWork.StudentsRepository.Insert(student);
+                await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(student);
@@ -61,14 +59,14 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            ViewBag.Groups = new SelectList(_groupsService.GetAllGroupsAsync().Result, "GroupId", "Name");
+            ViewBag.Groups = new SelectList(_unitOfWork.GroupsRepository.GetAllGroupsAsync().Result, "GroupId", "Name");
 
-            if (id == null || await _studentsService.GetAllStudentsAsync() == null)
+            if (id == null || await _unitOfWork.StudentsRepository.GetAllStudentsAsync() == null)
             {
                 return NotFound();
             }
 
-            var student = await _studentsService.GetStudentByIdAsync(id.GetValueOrDefault());
+            var student = await _unitOfWork.StudentsRepository.GetStudentByIdAsync(id.GetValueOrDefault());
             if (student == null)
             {
                 return NotFound();
@@ -80,7 +78,7 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("StudentId,FirstName,LastName")] Student student)
         {
-            ViewBag.Groups = new SelectList(_groupsService.GetAllGroupsAsync().Result, "GroupId", "Name");
+            ViewBag.Groups = new SelectList(_unitOfWork.GroupsRepository.GetAllGroupsAsync().Result, "GroupId", "Name");
 
             if (id != student.StudentId)
             {
@@ -91,8 +89,8 @@ namespace Presentation.Controllers
             {
                 try
                 {
-                    _studentsService.Update(student);
-                    await _studentsService.SaveChangesAsync();
+                    _unitOfWork.StudentsRepository.Update(student);
+                    await _unitOfWork.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -112,12 +110,12 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || await _studentsService.GetAllStudentsAsync() == null)
+            if (id == null || await _unitOfWork.StudentsRepository.GetAllStudentsAsync() == null)
             {
                 return NotFound();
             }
 
-            var student = await _studentsService.GetStudentByIdAsync(id.GetValueOrDefault());
+            var student = await _unitOfWork.StudentsRepository.GetStudentByIdAsync(id.GetValueOrDefault());
             if (student == null)
             {
                 return NotFound();
@@ -130,20 +128,20 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (await _studentsService.GetAllStudentsAsync() == null)
+            if (await _unitOfWork.StudentsRepository.GetAllStudentsAsync() == null)
             {
                 return Problem("Entity set 'CoursesDbContext.Students'  is null.");
             }
 
-            _studentsService.Delete(id);
+            _unitOfWork.StudentsRepository.Delete(id);
 
-            await _studentsService.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool StudentExists(int id)
         {
-            if (_studentsService.GetAllStudentsAsync().Result == null)
+            if (_unitOfWork.StudentsRepository.GetAllStudentsAsync().Result == null)
                 return false;
             return true;
         }

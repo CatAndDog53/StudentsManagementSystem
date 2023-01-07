@@ -8,28 +8,26 @@ namespace Presentation.Controllers
 {
     public class GroupsController : Controller
     {
-        private readonly IGroupsService _groupsService;
-        private readonly ICoursesService _coursesService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GroupsController(IGroupsService groupsService, ICoursesService coursesService)
+        public GroupsController(IUnitOfWork unitOfWork)
         {
-            _groupsService = groupsService;
-            _coursesService = coursesService;
+            _unitOfWork= unitOfWork;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _groupsService.GetAllGroupsAsync());
+            return View(await _unitOfWork.GroupsRepository.GetAllGroupsAsync());
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || await _groupsService.GetAllGroupsAsync() == null)
+            if (id == null || await _unitOfWork.GroupsRepository.GetAllGroupsAsync() == null)
             {
                 return NotFound();
             }
 
-            var @group = await _groupsService.GetGroupByIdAsync(id.GetValueOrDefault());
+            var @group = await _unitOfWork.GroupsRepository.GetGroupByIdAsync(id.GetValueOrDefault());
             if (@group == null)
             {
                 return NotFound();
@@ -40,7 +38,7 @@ namespace Presentation.Controllers
 
         public IActionResult Create()
         {
-            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+            ViewBag.Courses = new SelectList(_unitOfWork.CoursesRepository.GetAllCoursesAsync().Result, "CourseId", "Name");
 
             return View();
         }
@@ -49,12 +47,12 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("GroupId,CourseId,Name")] Group @group)
         {
-            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+            ViewBag.Courses = new SelectList(_unitOfWork.CoursesRepository.GetAllCoursesAsync().Result, "CourseId", "Name");
 
             if (ModelState.IsValid)
             {
-                _groupsService.Insert(@group);
-                await _groupsService.SaveChangesAsync();
+                _unitOfWork.GroupsRepository.Insert(@group);
+                await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(@group);
@@ -62,14 +60,14 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+            ViewBag.Courses = new SelectList(_unitOfWork.CoursesRepository.GetAllCoursesAsync().Result, "CourseId", "Name");
 
-            if (id == null || await _groupsService.GetAllGroupsAsync() == null)
+            if (id == null || await _unitOfWork.GroupsRepository.GetAllGroupsAsync() == null)
             {
                 return NotFound();
             }
 
-            var @group = await _groupsService.GetGroupByIdAsync(id.GetValueOrDefault());
+            var @group = await _unitOfWork.GroupsRepository.GetGroupByIdAsync(id.GetValueOrDefault());
             if (@group == null)
             {
                 return NotFound();
@@ -81,7 +79,7 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("GroupId,CourseId,Name")] Group @group)
         {
-            ViewBag.Courses = new SelectList(_coursesService.GetAllCoursesAsync().Result, "CourseId", "Name");
+            ViewBag.Courses = new SelectList(_unitOfWork.CoursesRepository.GetAllCoursesAsync().Result, "CourseId", "Name");
 
             if (id != @group.GroupId)
             {
@@ -92,8 +90,8 @@ namespace Presentation.Controllers
             {
                 try
                 {
-                    _groupsService.Update(@group);
-                    await _groupsService.SaveChangesAsync();
+                    _unitOfWork.GroupsRepository.Update(@group);
+                    await _unitOfWork.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -113,12 +111,12 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || await _groupsService.GetAllGroupsAsync() == null)
+            if (id == null || await _unitOfWork.GroupsRepository.GetAllGroupsAsync() == null)
             {
                 return NotFound();
             }
 
-            var @group = await _groupsService.GetGroupByIdAsync(id.GetValueOrDefault());
+            var @group = await _unitOfWork.GroupsRepository.GetGroupByIdAsync(id.GetValueOrDefault());
             if (@group == null)
             {
                 return NotFound();
@@ -131,20 +129,20 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (await _groupsService.GetAllGroupsAsync() == null)
+            if (await _unitOfWork.GroupsRepository.GetAllGroupsAsync() == null)
             {
                 return Problem("Entity set 'CoursesDbContext.Groups'  is null.");
             }
 
-            _groupsService.Delete(id);
+            _unitOfWork.GroupsRepository.Delete(id);
 
-            await _groupsService.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool GroupExists(int id)
         {
-            if (_groupsService.GetAllGroupsAsync().Result == null)
+            if (_unitOfWork.GroupsRepository.GetAllGroupsAsync().Result == null)
                 return false;
             return true;
         }

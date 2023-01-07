@@ -7,26 +7,26 @@ namespace Presentation.Controllers
 {
     public class CoursesController : Controller
     {
-        private readonly ICoursesService _coursesService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CoursesController(ICoursesService coursesService)
+        public CoursesController(IUnitOfWork unitOfWork)
         {
-            _coursesService = coursesService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _coursesService.GetAllCoursesAsync());
+            return View(await _unitOfWork.CoursesRepository.GetAllCoursesAsync());
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _coursesService.GetAllCoursesAsync() == null)
+            if (id == null || _unitOfWork.CoursesRepository.GetAllCoursesAsync() == null)
             {
                 return NotFound();
             }
 
-            var course = await _coursesService.GetCourseByIdAsync(id.GetValueOrDefault());
+            var course = await _unitOfWork.CoursesRepository.GetCourseByIdAsync(id.GetValueOrDefault());
             if (course == null)
             {
                 return NotFound();
@@ -46,8 +46,8 @@ namespace Presentation.Controllers
         {
             if (ModelState.IsValid)
             {
-                _coursesService.Insert(course);
-                await _coursesService.SaveChangesAsync();
+                _unitOfWork.CoursesRepository.Insert(course);
+                await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(course);
@@ -55,12 +55,12 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _coursesService.GetAllCoursesAsync == null)
+            if (id == null || _unitOfWork.CoursesRepository.GetAllCoursesAsync == null)
             {
                 return NotFound();
             }
 
-            var course = await _coursesService.GetCourseByIdAsync(id.GetValueOrDefault());
+            var course = await _unitOfWork.CoursesRepository.GetCourseByIdAsync(id.GetValueOrDefault());
             if (course == null)
             {
                 return NotFound();
@@ -81,8 +81,8 @@ namespace Presentation.Controllers
             {
                 try
                 {
-                    _coursesService.Update(course);
-                    await _coursesService.SaveChangesAsync();
+                    _unitOfWork.CoursesRepository.Update(course);
+                    await _unitOfWork.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -102,12 +102,12 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _coursesService.GetAllCoursesAsync() == null)
+            if (id == null || _unitOfWork.CoursesRepository.GetAllCoursesAsync() == null)
             {
                 return NotFound();
             }
 
-            var course = await _coursesService.GetCourseByIdAsync(id.GetValueOrDefault());
+            var course = await _unitOfWork.CoursesRepository.GetCourseByIdAsync(id.GetValueOrDefault());
             if (course == null)
             {
                 return NotFound();
@@ -120,20 +120,20 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_coursesService.GetAllCoursesAsync() == null)
+            if (_unitOfWork.CoursesRepository.GetAllCoursesAsync() == null)
             {
                 return Problem("Entity set 'CoursesDbContext.Courses'  is null.");
             }
 
-            _coursesService.Delete(id);
+            _unitOfWork.CoursesRepository.Delete(id);
 
-            await _coursesService.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CourseExists(int id)
         {
-            if (_coursesService.GetAllCoursesAsync() == null)
+            if (_unitOfWork.CoursesRepository.GetAllCoursesAsync() == null)
                 return false;
             return true;
         }
