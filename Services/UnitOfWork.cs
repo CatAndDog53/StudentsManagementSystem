@@ -13,18 +13,22 @@ namespace Services
         public IGroupsRepository GroupsRepository => _groupsRepository;
         public IStudentsRepository StudentsRepository => _studentsRepository;
 
-        public UnitOfWork(CoursesDbContext dbContext, ICoursesRepository coursesRepository, IGroupsRepository groupsRepository, 
-            IStudentsRepository studentsRepository)
+        public UnitOfWork(CoursesDbContext dbContext)
         {
             _dbContext = dbContext;
-            _coursesRepository = coursesRepository;
-            _groupsRepository = groupsRepository;
-            _studentsRepository = studentsRepository;
+            _coursesRepository = new CoursesRepository(dbContext);
+            _groupsRepository = new GroupsRepository(dbContext);
+            _studentsRepository = new StudentsRepository(dbContext);
         }
 
         public async Task SaveChangesAsync()
         {
             await _dbContext.SaveChangesAsync();
+        }
+
+        public void Dispose()
+        {
+            _dbContext.Dispose();
         }
     }
 }

@@ -17,9 +17,6 @@ namespace Presentation
             builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
             builder.Services.AddScoped<IGroupsRepository, GroupsRepository>();
             builder.Services.AddScoped<IStudentsRepository, StudentsRepository>();
-            builder.Services.AddScoped<ICoursesService, CoursesService>();
-            builder.Services.AddScoped<IGroupsService, GroupsService>();
-            builder.Services.AddScoped<IStudentsService, StudentsService>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();

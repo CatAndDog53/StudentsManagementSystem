@@ -2,12 +2,12 @@
 
 namespace Services
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
-        public ICoursesRepository CoursesRepository { get; }
-        public IGroupsRepository GroupsRepository { get; }
-        public IStudentsRepository StudentsRepository { get; }
+        ICoursesRepository CoursesRepository { get; }
+        IGroupsRepository GroupsRepository { get; }
+        IStudentsRepository StudentsRepository { get; }
 
-        public Task SaveChangesAsync();
+        Task SaveChangesAsync();
     }
 }
