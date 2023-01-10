@@ -14,9 +14,6 @@ namespace Presentation
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<Infrastructure.CoursesDbContext>(options =>
                 options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
-            builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
-            builder.Services.AddScoped<IGroupsRepository, GroupsRepository>();
-            builder.Services.AddScoped<IStudentsRepository, StudentsRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
