@@ -1,0 +1,18 @@
+﻿@model Model.Group
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h4>Group | Delete</h4>
+
+<h1>@Model.Name</h1>
+
+<hr />
+<h2>Error!</h2>
+<h3>Group cannot be deleted if there are students in it!</h3>
+
+<div style ="margin-top: 20px;">
+    <a asp-action="Index">Back to List</a>
+</div>
+

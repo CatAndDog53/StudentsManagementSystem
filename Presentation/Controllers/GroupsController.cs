@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Model;
@@ -134,11 +135,23 @@ namespace Presentation.Controllers
                 return Problem("Entity set 'CoursesDbContext.Groups'  is null.");
             }
 
+            var students = await _unitOfWork.StudentsRepository.GetStudentsByGroupIdAsync(id);
+            if (students.Count > 0)
+            {
+                return RedirectToAction("DeleteGroupWithStudentsError", new { groupId = id });
+            }
+
             Group group = await _unitOfWork.GroupsRepository.GetByIdAsync(id);
             _unitOfWork.GroupsRepository.Remove(group);
 
             await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> DeleteGroupWithStudentsError(int groupId)
+        {
+            Group group = await _unitOfWork.GroupsRepository.GetByIdAsync(groupId);
+            return View(group);
         }
 
         private async Task<bool> GroupExists(int id)

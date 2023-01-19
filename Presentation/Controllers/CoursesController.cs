@@ -125,11 +125,23 @@ namespace Presentation.Controllers
                 return Problem("Entity set 'CoursesDbContext.Courses'  is null.");
             }
 
+            var groups = await _unitOfWork.GroupsRepository.GetGroupsByCourseIdAsync(id);
+            if (groups.Count > 0)
+            {
+                return RedirectToAction("DeleteCourseWithGroupsError", new { courseId = id });
+            }
+
             Course course = await _unitOfWork.CoursesRepository.GetByIdAsync(id);
             _unitOfWork.CoursesRepository.Remove(course);
 
             await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> DeleteCourseWithGroupsError(int courseId)
+        {
+            Course course = await _unitOfWork.CoursesRepository.GetByIdAsync(courseId);
+            return View(course);
         }
 
         private async Task<bool> CourseExists(int id)
