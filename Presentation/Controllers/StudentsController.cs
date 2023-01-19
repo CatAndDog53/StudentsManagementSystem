@@ -76,7 +76,7 @@ namespace Presentation.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("StudentId,FirstName,LastName")] Student student)
+        public async Task<IActionResult> Edit(int id, [Bind("StudentId,GroupId,FirstName,LastName")] Student student)
         {
             ViewBag.Groups = new SelectList(await _unitOfWork.GroupsRepository.GetAllAsync(), "GroupId", "Name");
 

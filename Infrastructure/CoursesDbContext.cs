@@ -23,12 +23,14 @@ namespace Infrastructure
             BuildStudents(modelBuilder);
         }
 
-        private void BuildStudents(ModelBuilder modelBuilder)
+        private void BuildCourses(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Student>(action =>
+            modelBuilder.Entity<Course>(action =>
             {
-                action.Property(student => student.StudentId)
-                    .IsRequired();
+                action.Property(course => course.Name).HasMaxLength(30);
+                action.Property(course => course.Description).HasMaxLength(500);
+
+                action.HasMany(course => course.Groups);
             });
         }
 
@@ -36,19 +38,28 @@ namespace Infrastructure
         {
             modelBuilder.Entity<Group>(action =>
             {
-                action.Property(group => group.GroupId)
-                    .IsRequired();
+                action.Property(group => group.Name).HasMaxLength(30);
+
+                action.HasOne(group => group.Course).WithMany(course => course.Groups)
+                    .HasForeignKey(group => group.CourseId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                action.Navigation(group => group.Course).AutoInclude();
             });
         }
 
-        private void BuildCourses(ModelBuilder modelBuilder)
+        private void BuildStudents(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Course>(action =>
+            modelBuilder.Entity<Student>(action =>
             {
-                action.Property(course => course.CourseId)
-                    .IsRequired();
+                action.Property(student => student.FirstName).HasMaxLength(30);
+                action.Property(student => student.LastName).HasMaxLength(30);
 
-                action.HasMany(course => course.Groups);
+                action.HasOne(student => student.Group).WithMany(group => group.Students)
+                    .HasForeignKey(student => student.GroupId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                action.Navigation(student => student.Group).AutoInclude();
             });
         }
     }

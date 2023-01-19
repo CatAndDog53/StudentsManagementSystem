@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Model;
+using System.Linq.Expressions;
 
 namespace Infrastructure
 {
@@ -10,7 +11,8 @@ namespace Infrastructure
 
         public async Task<List<Group>> GetGroupsByCourseIdAsync(int courseId)
         {
-            return await CoursesDbContext.Groups.Where(group => group.CourseId == courseId).ToListAsync();
+            return await CoursesDbContext.Groups
+                .Where(group => group.CourseId == courseId).ToListAsync();
         }
     }
 }

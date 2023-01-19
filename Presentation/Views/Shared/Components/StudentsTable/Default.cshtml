@@ -10,7 +10,7 @@
                 @Html.DisplayNameFor(model => model.LastName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.GroupId)
+                @Html.DisplayNameFor(model => model.Group)
             </th>
             <th></th>
         </tr>
@@ -26,7 +26,7 @@
                     @Html.DisplayFor(modelItem => item.LastName)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.GroupId)
+                    @Html.DisplayFor(modelItem => item.Group.Name)
                 </td>
                 <td>
                     <a asp-controller="Students" asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
