@@ -9,17 +9,11 @@
 <div>
     <h1>@Model.FirstName @Model.LastName</h1>
     <dl class="row">
-        <dt class = "col-xs-2">
-            @Html.DisplayNameFor(model => model.FirstName)
+        <dt class="col-xs-2">
+            @Html.DisplayNameFor(model => model.Group)
         </dt>
-        <dd class = "col-xs-10">
-            @Html.DisplayFor(model => model.FirstName)
-        </dd>
-        <dt class = "col-xs-2">
-            @Html.DisplayNameFor(model => model.LastName)
-        </dt>
-        <dd class = "col-xs-10">
-            @Html.DisplayFor(model => model.LastName)
+        <dd class="col-xs-10">
+            @Html.DisplayFor(model => model.Group.Name)
         </dd>
     </dl>
 </div>
