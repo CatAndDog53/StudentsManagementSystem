@@ -112,7 +112,6 @@ namespace Presentation.Controllers
             {
                 return NotFound();
             }
-
             return View(course);
         }
 
@@ -146,8 +145,10 @@ namespace Presentation.Controllers
 
         private async Task<bool> CourseExists(int id)
         {
-            if (await _unitOfWork.CoursesRepository.GetAllAsync() == null)
+            if (await _unitOfWork.CoursesRepository.GetByIdAsync(id) == null)
+            {
                 return false;
+            }
             return true;
         }
     }

@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Model;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace Infrastructure
 {

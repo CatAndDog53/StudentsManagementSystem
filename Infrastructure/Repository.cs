@@ -42,7 +42,5 @@ namespace Infrastructure
         {
             _dbContext.Set<TEntity>().Remove(entity);
         }
-
-
     }
 }

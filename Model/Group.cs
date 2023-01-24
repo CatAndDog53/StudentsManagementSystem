@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Model
+﻿namespace Model
 {
     public class Group
     {

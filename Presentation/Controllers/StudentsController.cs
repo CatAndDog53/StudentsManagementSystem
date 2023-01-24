@@ -142,8 +142,10 @@ namespace Presentation.Controllers
 
         private async Task<bool> StudentExists(int id)
         {
-            if (await _unitOfWork.StudentsRepository.GetAllAsync() == null)
+            if (await _unitOfWork.StudentsRepository.GetByIdAsync(id) == null)
+            {
                 return false;
+            }
             return true;
         }
     }

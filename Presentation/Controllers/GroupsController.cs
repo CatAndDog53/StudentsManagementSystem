@@ -1,5 +1,4 @@
-﻿using Infrastructure;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Model;
@@ -156,8 +155,10 @@ namespace Presentation.Controllers
 
         private async Task<bool> GroupExists(int id)
         {
-            if (await _unitOfWork.GroupsRepository.GetAllAsync() == null)
+            if (await _unitOfWork.GroupsRepository.GetByIdAsync(id) == null)
+            {
                 return false;
+            }   
             return true;
         }
     }
