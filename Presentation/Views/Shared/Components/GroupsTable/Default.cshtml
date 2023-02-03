@@ -17,10 +17,10 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                    @Html.ActionLink(item.Name, "Details", "Groups", new { id = item.GroupId }, new { @style = "color:#000000   ;" })
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Course.Name)
+                    @Html.ActionLink(item.Course.Name, "Details", "Courses", new { id = item.CourseId }, new { @style = "color:#000000;" })
                 </td>
                 <td>
                     <a asp-controller="Groups" asp-action="Edit" asp-route-id="@item.GroupId">Edit</a> |

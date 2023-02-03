@@ -13,7 +13,7 @@
             @Html.DisplayNameFor(model => model.Course)
         </dt>
         <dd class = "col-xs-10">
-            @Html.DisplayFor(model => model.Course.Name)
+            @Html.ActionLink(Model.Course.Name, "Details", "Courses", new { id = Model.CourseId }, new { @style = "color:#000000;" })
         </dd>
     </dl>
 </div>

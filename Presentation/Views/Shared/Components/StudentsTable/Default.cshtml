@@ -20,13 +20,13 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.FirstName)
+                    @Html.ActionLink(item.FirstName, "Details", new { id = item.StudentId }, new { @style = "color:#000000;" })
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.LastName)
+                    @Html.ActionLink(item.LastName, "Details", new { id = item.StudentId }, new { @style = "color:#000000;" })
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Group.Name)
+                    @Html.ActionLink(item.Group.Name, "Details", "Groups", new { id = item.GroupId }, new { @style = "color:#000000;" })
                 </td>
                 <td>
                     <a asp-controller="Students" asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
