@@ -20,10 +20,10 @@
         {
             <tr>
                 <td>
-                    @Html.ActionLink(item.FirstName, "Details", new { id = item.StudentId }, new { @style = "color:#000000;" })
+                    @Html.ActionLink(item.FirstName, "Details", "Students", new { id = item.StudentId }, new { @style = "color:#000000;" })
                 </td>
                 <td>
-                    @Html.ActionLink(item.LastName, "Details", new { id = item.StudentId }, new { @style = "color:#000000;" })
+                    @Html.ActionLink(item.LastName, "Details", "Students", new { id = item.StudentId }, new { @style = "color:#000000;" })
                 </td>
                 <td>
                     @Html.ActionLink(item.Group.Name, "Details", "Groups", new { id = item.GroupId }, new { @style = "color:#000000;" })
