@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Presentation.ViewModels;
 using Services;
 
 namespace Presentation.Controllers
@@ -9,15 +11,18 @@ namespace Presentation.Controllers
     public class GroupsController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public GroupsController(IUnitOfWork unitOfWork)
+        public GroupsController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _unitOfWork= unitOfWork;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _unitOfWork.GroupsRepository.GetAllAsync());
+            var groupsViewModel = _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync());
+            return View(groupsViewModel);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -27,75 +32,87 @@ namespace Presentation.Controllers
                 return NotFound();
             }
 
-            var @group = await _unitOfWork.GroupsRepository.GetByIdAsync(id.GetValueOrDefault());
-            if (@group == null)
+            var group = await _unitOfWork.GroupsRepository.GetByIdAsync(id.GetValueOrDefault());
+            if (group == null)
             {
                 return NotFound();
             }
 
-            return View(@group);
+            var groupViewModel = _mapper.Map<GroupViewModel>(group);
+            return View(groupViewModel);
         }
 
         public async Task<IActionResult> Create()
         {
-            ViewBag.Courses = new SelectList(await _unitOfWork.CoursesRepository.GetAllAsync(), "CourseId", "Name");
+            ViewBag.Courses = new SelectList(
+                _mapper.Map<IEnumerable<CourseViewModel>>(await _unitOfWork.CoursesRepository.GetAllAsync()), 
+                "CourseId", "Name");
 
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("GroupId,CourseId,Name")] Group @group)
+        public async Task<IActionResult> Create([Bind("GroupId,CourseId,Name")] GroupViewModel groupViewModel)
         {
-            ViewBag.Courses = new SelectList(await _unitOfWork.CoursesRepository.GetAllAsync(), "CourseId", "Name");
+            ViewBag.Courses = new SelectList(
+                _mapper.Map<IEnumerable<CourseViewModel>>(await _unitOfWork.CoursesRepository.GetAllAsync()),
+                "CourseId", "Name");
 
             if (ModelState.IsValid)
             {
-                _unitOfWork.GroupsRepository.Add(@group);
+                _unitOfWork.GroupsRepository.Add(_mapper.Map<Group>(groupViewModel));
                 await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(@group);
+            return View(groupViewModel);
         }
 
         public async Task<IActionResult> Edit(int? id)
         {
-            ViewBag.Courses = new SelectList(await _unitOfWork.CoursesRepository.GetAllAsync(), "CourseId", "Name");
+            ViewBag.Courses = new SelectList(
+                _mapper.Map<IEnumerable<CourseViewModel>>(await _unitOfWork.CoursesRepository.GetAllAsync()),
+                "CourseId", "Name");
 
             if (id == null || await _unitOfWork.GroupsRepository.GetAllAsync() == null)
             {
                 return NotFound();
             }
 
-            var @group = await _unitOfWork.GroupsRepository.GetByIdAsync(id.GetValueOrDefault());
-            if (@group == null)
+            var group = await _unitOfWork.GroupsRepository.GetByIdAsync(id.GetValueOrDefault());
+            if (group == null)
             {
                 return NotFound();
             }
-            return View(@group);
+
+            var groupViewModel = _mapper.Map<GroupViewModel>(group);
+            return View(groupViewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("GroupId,CourseId,Name")] Group @group)
+        public async Task<IActionResult> Edit(int id, [Bind("GroupId,CourseId,Name")] GroupViewModel groupViewModel)
         {
-            ViewBag.Courses = new SelectList(await _unitOfWork.CoursesRepository.GetAllAsync(), "CourseId", "Name");
+            ViewBag.Courses = new SelectList(
+                _mapper.Map<IEnumerable<CourseViewModel>>(await _unitOfWork.CoursesRepository.GetAllAsync()),
+                "CourseId", "Name");
 
-            if (id != @group.GroupId)
+            if (id != groupViewModel.GroupId)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                var group = _mapper.Map<Group>(groupViewModel);
                 try
                 {
-                    _unitOfWork.GroupsRepository.Update(@group);
+                    _unitOfWork.GroupsRepository.Update(group);
                     await _unitOfWork.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await GroupExists(@group.GroupId))
+                    if (!await GroupExists(group.GroupId))
                     {
                         return NotFound();
                     }
@@ -106,7 +123,7 @@ namespace Presentation.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(@group);
+            return View(groupViewModel);
         }
 
         public async Task<IActionResult> Delete(int? id)
@@ -116,13 +133,14 @@ namespace Presentation.Controllers
                 return NotFound();
             }
 
-            var @group = await _unitOfWork.GroupsRepository.GetByIdAsync(id.GetValueOrDefault());
-            if (@group == null)
+            var group = await _unitOfWork.GroupsRepository.GetByIdAsync(id.GetValueOrDefault());
+            if (group == null)
             {
                 return NotFound();
             }
 
-            return View(@group);
+            var groupViewModel = _mapper.Map<GroupViewModel>(group);
+            return View(groupViewModel);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -140,7 +158,7 @@ namespace Presentation.Controllers
                 return RedirectToAction("DeleteGroupWithStudentsError", new { groupId = id });
             }
 
-            Group group = await _unitOfWork.GroupsRepository.GetByIdAsync(id);
+            var group = await _unitOfWork.GroupsRepository.GetByIdAsync(id);
             _unitOfWork.GroupsRepository.Remove(group);
 
             await _unitOfWork.SaveChangesAsync();
@@ -149,8 +167,9 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> DeleteGroupWithStudentsError(int groupId)
         {
-            Group group = await _unitOfWork.GroupsRepository.GetByIdAsync(groupId);
-            return View(group);
+            var group = await _unitOfWork.GroupsRepository.GetByIdAsync(groupId);
+            var groupViewModel = _mapper.Map<GroupViewModel>(group);
+            return View(groupViewModel);
         }
 
         private async Task<bool> GroupExists(int id)

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Presentation.ViewModels;
 using Services;
 
 namespace Presentation.Controllers
@@ -8,15 +10,18 @@ namespace Presentation.Controllers
     public class CoursesController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CoursesController(IUnitOfWork unitOfWork)
+        public CoursesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _unitOfWork.CoursesRepository.GetAllAsync());
+            var coursesViewModel = _mapper.Map<IEnumerable<CourseViewModel>>(await _unitOfWork.CoursesRepository.GetAllAsync());
+            return View(coursesViewModel);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -32,7 +37,8 @@ namespace Presentation.Controllers
                 return NotFound();
             }
 
-            return View(course);
+            var courseViewModel = _mapper.Map<CourseViewModel>(course);
+            return View(courseViewModel);
         }
 
         public IActionResult Create()
@@ -42,15 +48,15 @@ namespace Presentation.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CourseId,Name,Description")] Course course)
+        public async Task<IActionResult> Create([Bind("CourseId,Name,Description")] CourseViewModel courseViewModel)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.CoursesRepository.Add(course);
+                _unitOfWork.CoursesRepository.Add(_mapper.Map<Course>(courseViewModel));
                 await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(course);
+            return View(courseViewModel);
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -65,20 +71,23 @@ namespace Presentation.Controllers
             {
                 return NotFound();
             }
-            return View(course);
+
+            var courseViewModel = _mapper.Map<CourseViewModel>(course);
+            return View(courseViewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Name,Description")] Course course)
+        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Name,Description")] CourseViewModel courseViewModel)
         {
-            if (id != course.CourseId)
+            if (id != courseViewModel.CourseId)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                var course = _mapper.Map<Course>(courseViewModel);
                 try
                 {
                     _unitOfWork.CoursesRepository.Update(course);
@@ -97,7 +106,7 @@ namespace Presentation.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(course);
+            return View(courseViewModel);
         }
 
         public async Task<IActionResult> Delete(int? id)
@@ -112,7 +121,10 @@ namespace Presentation.Controllers
             {
                 return NotFound();
             }
-            return View(course);
+
+            var courseViewModel = _mapper.Map<CourseViewModel>(course);
+
+            return View(courseViewModel);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -139,8 +151,9 @@ namespace Presentation.Controllers
 
         public async Task<IActionResult> DeleteCourseWithGroupsError(int courseId)
         {
-            Course course = await _unitOfWork.CoursesRepository.GetByIdAsync(courseId);
-            return View(course);
+            var course = await _unitOfWork.CoursesRepository.GetByIdAsync(courseId);
+            var courseViewModel = _mapper.Map<CourseViewModel>(course);
+            return View(courseViewModel);
         }
 
         private async Task<bool> CourseExists(int id)

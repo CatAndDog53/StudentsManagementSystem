@@ -1,5 +1,8 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Services;
+using Presentation.Mappings;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Presentation
 {
@@ -13,6 +16,11 @@ namespace Presentation
             builder.Services.AddDbContext<Infrastructure.CoursesDbContext>(options =>
                 options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+            //var mapperConfig = new MapperConfiguration(mc => { mc.AddProfile(new MappingProfile()); });
+            //IMapper mapper = mapperConfig.CreateMapper();
+            //builder.Services.AddSingleton(mapper);
 
             var app = builder.Build();
 

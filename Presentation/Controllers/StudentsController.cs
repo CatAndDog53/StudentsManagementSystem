@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Presentation.ViewModels;
 using Services;
 
 namespace Presentation.Controllers
@@ -9,15 +11,18 @@ namespace Presentation.Controllers
     public class StudentsController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public StudentsController(IUnitOfWork unitOfWork)
+        public StudentsController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork= unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _unitOfWork.StudentsRepository.GetAllAsync());
+            var studentsViewModel = _mapper.Map<IEnumerable<StudentViewModel>>(await _unitOfWork.StudentsRepository.GetAllAsync());
+            return View(studentsViewModel);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -33,33 +38,41 @@ namespace Presentation.Controllers
                 return NotFound();
             }
 
-            return View(student);
+            var studentViewModel = _mapper.Map<StudentViewModel>(student);
+            return View(studentViewModel);
         }
 
         public async Task<IActionResult> Create()
         {
-            ViewBag.Groups = new SelectList(await _unitOfWork.GroupsRepository.GetAllAsync(), "GroupId", "Name");
+            ViewBag.Groups = new SelectList(
+                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()), 
+                "GroupId", "Name");
+
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("StudentId,GroupId,FirstName,LastName")] Student student)
+        public async Task<IActionResult> Create([Bind("StudentId,GroupId,FirstName,LastName")] StudentViewModel studentViewModel)
         {
-            ViewBag.Groups = new SelectList(await _unitOfWork.GroupsRepository.GetAllAsync(), "GroupId", "Name");
+            ViewBag.Groups = new SelectList(
+                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()),
+                "GroupId", "Name");
 
             if (ModelState.IsValid)
             {
-                _unitOfWork.StudentsRepository.Add(student);
+                _unitOfWork.StudentsRepository.Add(_mapper.Map<Student>(studentViewModel));
                 await _unitOfWork.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(student);
+            return View(studentViewModel);
         }
 
         public async Task<IActionResult> Edit(int? id)
         {
-            ViewBag.Groups = new SelectList(await _unitOfWork.GroupsRepository.GetAllAsync(), "GroupId", "Name");
+            ViewBag.Groups = new SelectList(
+                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()),
+                "GroupId", "Name");
 
             if (id == null || await _unitOfWork.StudentsRepository.GetAllAsync() == null)
             {
@@ -71,22 +84,27 @@ namespace Presentation.Controllers
             {
                 return NotFound();
             }
-            return View(student);
+
+            var studentViewModel = _mapper.Map<StudentViewModel>(student);
+            return View(studentViewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("StudentId,GroupId,FirstName,LastName")] Student student)
+        public async Task<IActionResult> Edit(int id, [Bind("StudentId,GroupId,FirstName,LastName")] StudentViewModel studentViewModel)
         {
-            ViewBag.Groups = new SelectList(await _unitOfWork.GroupsRepository.GetAllAsync(), "GroupId", "Name");
+            ViewBag.Groups = new SelectList(
+                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()),
+                "GroupId", "Name");
 
-            if (id != student.StudentId)
+            if (id != studentViewModel.StudentId)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                var student = _mapper.Map<Student>(studentViewModel);
                 try
                 {
                     _unitOfWork.StudentsRepository.Update(student);
@@ -105,7 +123,7 @@ namespace Presentation.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(student);
+            return View(studentViewModel);
         }
 
         public async Task<IActionResult> Delete(int? id)
@@ -121,7 +139,8 @@ namespace Presentation.Controllers
                 return NotFound();
             }
 
-            return View(student);
+            var studentViewModel = _mapper.Map<StudentViewModel>(student);
+            return View(studentViewModel);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -133,7 +152,7 @@ namespace Presentation.Controllers
                 return Problem("Entity set 'CoursesDbContext.Students'  is null.");
             }
 
-            Student student = await _unitOfWork.StudentsRepository.GetByIdAsync(id);
+            var student = await _unitOfWork.StudentsRepository.GetByIdAsync(id);
             _unitOfWork.StudentsRepository.Remove(student);
 
             await _unitOfWork.SaveChangesAsync();

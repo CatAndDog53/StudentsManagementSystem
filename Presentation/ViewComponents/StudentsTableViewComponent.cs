@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Model;
+using Presentation.ViewModels;
 using Services;
 
 namespace Presentation.ViewComponents
@@ -7,10 +9,12 @@ namespace Presentation.ViewComponents
     public class StudentsTableViewComponent : ViewComponent
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public StudentsTableViewComponent(IUnitOfWork unitOfWork)
+        public StudentsTableViewComponent(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<IViewComponentResult> InvokeAsync(int? groupId = null)
@@ -26,7 +30,8 @@ namespace Presentation.ViewComponents
                 students = await _unitOfWork.StudentsRepository.GetAllAsync();
             }
 
-            return View(students);
+            var studentsViewModel = _mapper.Map<IEnumerable<StudentViewModel>>(students);
+            return View(studentsViewModel);
         }
     }
 }
