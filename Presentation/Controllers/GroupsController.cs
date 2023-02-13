@@ -5,17 +5,20 @@ using Microsoft.EntityFrameworkCore;
 using Model;
 using Presentation.ViewModels;
 using Services;
+using Services.Interfaces;
 
 namespace Presentation.Controllers
 {
     public class GroupsController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IGroupsService _groupsService;
         private readonly IMapper _mapper;
 
-        public GroupsController(IUnitOfWork unitOfWork, IMapper mapper)
+        public GroupsController(IUnitOfWork unitOfWork, IGroupsService groupsService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _groupsService = groupsService;
             _mapper = mapper;
         }
 
@@ -112,7 +115,7 @@ namespace Presentation.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await GroupExists(group.GroupId))
+                    if (!await _groupsService.GroupExists(group.GroupId))
                     {
                         return NotFound();
                     }
@@ -170,15 +173,6 @@ namespace Presentation.Controllers
             var group = await _unitOfWork.GroupsRepository.GetByIdAsync(groupId);
             var groupViewModel = _mapper.Map<GroupViewModel>(group);
             return View(groupViewModel);
-        }
-
-        private async Task<bool> GroupExists(int id)
-        {
-            if (await _unitOfWork.GroupsRepository.GetByIdAsync(id) == null)
-            {
-                return false;
-            }   
-            return true;
         }
     }
 }

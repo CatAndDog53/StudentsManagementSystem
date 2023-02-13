@@ -4,17 +4,20 @@ using Microsoft.EntityFrameworkCore;
 using Model;
 using Presentation.ViewModels;
 using Services;
+using Services.Interfaces;
 
 namespace Presentation.Controllers
 {
     public class CoursesController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICoursesService _coursesService;
         private readonly IMapper _mapper;
 
-        public CoursesController(IUnitOfWork unitOfWork, IMapper mapper)
+        public CoursesController(IUnitOfWork unitOfWork, ICoursesService coursesService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _coursesService = coursesService;
             _mapper = mapper;
         }
 
@@ -95,7 +98,7 @@ namespace Presentation.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await CourseExists(course.CourseId))
+                    if (!await _coursesService.CourseExists(course.CourseId))
                     {
                         return NotFound();
                     }
@@ -154,15 +157,6 @@ namespace Presentation.Controllers
             var course = await _unitOfWork.CoursesRepository.GetByIdAsync(courseId);
             var courseViewModel = _mapper.Map<CourseViewModel>(course);
             return View(courseViewModel);
-        }
-
-        private async Task<bool> CourseExists(int id)
-        {
-            if (await _unitOfWork.CoursesRepository.GetByIdAsync(id) == null)
-            {
-                return false;
-            }
-            return true;
         }
     }
 }

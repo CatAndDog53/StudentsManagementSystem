@@ -5,17 +5,20 @@ using Microsoft.EntityFrameworkCore;
 using Model;
 using Presentation.ViewModels;
 using Services;
+using Services.Interfaces;
 
 namespace Presentation.Controllers
 {
     public class StudentsController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IStudentsService _studentsService;
         private readonly IMapper _mapper;
 
-        public StudentsController(IUnitOfWork unitOfWork, IMapper mapper)
+        public StudentsController(IUnitOfWork unitOfWork, IStudentsService studentsService, IMapper mapper)
         {
             _unitOfWork= unitOfWork;
+            _studentsService= studentsService;
             _mapper = mapper;
         }
 
@@ -112,7 +115,7 @@ namespace Presentation.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await StudentExists(student.StudentId))
+                    if (!await _studentsService.StudentExists(student.StudentId))
                     {
                         return NotFound();
                     }
@@ -157,15 +160,6 @@ namespace Presentation.Controllers
 
             await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private async Task<bool> StudentExists(int id)
-        {
-            if (await _unitOfWork.StudentsRepository.GetByIdAsync(id) == null)
-            {
-                return false;
-            }
-            return true;
         }
     }
 }
