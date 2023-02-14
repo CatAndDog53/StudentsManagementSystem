@@ -134,15 +134,10 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (await _unitOfWork.CoursesRepository.GetAllAsync() == null)
-            {
-                return Problem("Entity set 'CoursesDbContext.Courses'  is null.");
-            }
-
             var groups = await _unitOfWork.GroupsRepository.GetGroupsByCourseIdAsync(id);
             if (groups.Count > 0)
             {
-                return RedirectToAction("DeleteCourseWithGroupsError", new { courseId = id });
+                return RedirectToAction(nameof(DeleteCourseWithGroupsError), new { courseId = id });
             }
 
             Course course = await _unitOfWork.CoursesRepository.GetByIdAsync(id);

@@ -150,15 +150,10 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (await _unitOfWork.GroupsRepository.GetAllAsync() == null)
-            {
-                return Problem("Entity set 'CoursesDbContext.Groups'  is null.");
-            }
-
             var students = await _unitOfWork.StudentsRepository.GetStudentsByGroupIdAsync(id);
             if (students.Count > 0)
             {
-                return RedirectToAction("DeleteGroupWithStudentsError", new { groupId = id });
+                return RedirectToAction(nameof(DeleteGroupWithStudentsError), new { groupId = id });
             }
 
             var group = await _unitOfWork.GroupsRepository.GetByIdAsync(id);

@@ -150,11 +150,6 @@ namespace Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (await _unitOfWork.StudentsRepository.GetAllAsync() == null)
-            {
-                return Problem("Entity set 'CoursesDbContext.Students'  is null.");
-            }
-
             var student = await _unitOfWork.StudentsRepository.GetByIdAsync(id);
             _unitOfWork.StudentsRepository.Remove(student);
 
