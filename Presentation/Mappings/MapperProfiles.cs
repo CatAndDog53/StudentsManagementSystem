@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Model;
-using Presentation.ViewModels;
+using ViewModels;
 
 namespace Presentation.Mappings
 {

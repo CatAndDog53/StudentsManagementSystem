@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "Services\Services.csproj", "{57444099-7F1C-40E7-9208-BD970DDCC616}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServicesTests", "ServicesTests\ServicesTests.csproj", "{569636C3-1685-4B26-A298-787C792C356F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServicesTests", "ServicesTests\ServicesTests.csproj", "{569636C3-1685-4B26-A298-787C792C356F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewModels", "ViewModels\ViewModels.csproj", "{77800B20-9CC0-4D2B-B2DE-9DBE887FF075}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{569636C3-1685-4B26-A298-787C792C356F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{569636C3-1685-4B26-A298-787C792C356F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{569636C3-1685-4B26-A298-787C792C356F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77800B20-9CC0-4D2B-B2DE-9DBE887FF075}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77800B20-9CC0-4D2B-B2DE-9DBE887FF075}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77800B20-9CC0-4D2B-B2DE-9DBE887FF075}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77800B20-9CC0-4D2B-B2DE-9DBE887FF075}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Model;
-using Presentation.ViewModels;
+using ViewModels;
 using Services;
 using Services.Interfaces;
 

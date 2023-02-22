@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Model;
-using Presentation.ViewModels;
+using ViewModels;
 using Services;
 
 namespace Presentation.ViewComponents
