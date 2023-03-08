@@ -1,8 +1,5 @@
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Services;
-using Presentation.Mappings;
-using Microsoft.AspNetCore.Hosting;
 using Services.Interfaces;
 
 namespace Presentation

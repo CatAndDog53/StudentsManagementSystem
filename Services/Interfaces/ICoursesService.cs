@@ -1,6 +1,8 @@
-﻿namespace Services.Interfaces
+﻿using ViewModels;
+
+namespace Services.Interfaces
 {
-    public interface ICoursesService
+    public interface ICoursesService : IViewModelService<CourseViewModel>
     {
         Task<bool> CourseExists(int id);
     }

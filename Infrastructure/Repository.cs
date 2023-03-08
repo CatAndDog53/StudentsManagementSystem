@@ -13,14 +13,16 @@ namespace Infrastructure
             _dbContext = dbContext;
         }
 
-        public async Task<TEntity> GetByIdAsync(int id)
+        public async Task<TEntity?> GetByIdAsync(int? id)
         {
-            return await _dbContext.Set<TEntity>().FindAsync(id);
+            TEntity? entity = await _dbContext.Set<TEntity>().FindAsync(id);
+            _dbContext.Entry(entity).State = EntityState.Detached;
+            return entity;
         }
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            return await _dbContext.Set<TEntity>().ToListAsync();
+            return await _dbContext.Set<TEntity>().AsNoTracking().ToListAsync();
         }
 
         public IEnumerable<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate)
@@ -40,7 +42,7 @@ namespace Infrastructure
 
         public void Remove(TEntity entity)
         {
-            _dbContext.Set<TEntity>().Remove(entity);
+            _dbContext.Entry(entity).State = EntityState.Deleted;
         }
     }
 }

@@ -1,37 +1,32 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Model;
+﻿using Microsoft.AspNetCore.Mvc;
 using ViewModels;
-using Services;
+using Services.Interfaces;
 
 namespace Presentation.ViewComponents
 {
     public class GroupsTableViewComponent : ViewComponent
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+        private readonly IGroupsService _groupsService;
 
-        public GroupsTableViewComponent(IUnitOfWork unitOfWork, IMapper mapper)
+        public GroupsTableViewComponent(IGroupsService groupsService)
         {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            _groupsService = groupsService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync(int? courseId = null)
         {
-            IEnumerable<Group> groups;
+            IEnumerable<GroupViewModel> groups;
 
             if (courseId.HasValue)
             {
-                groups = await _unitOfWork.GroupsRepository.GetGroupsByCourseIdAsync(courseId.Value);
+                groups = await _groupsService.GetGroupsByCourseIdAsync(courseId.Value);
             }
             else
             {
-                groups = await _unitOfWork.GroupsRepository.GetAllAsync();
+                groups = await _groupsService.GetAllAsync();
             }  
 
-            var groupsViewModel = _mapper.Map<IEnumerable<GroupViewModel>>(groups);
-            return View(groupsViewModel);
+            return View(groups);
         }
     }
 }

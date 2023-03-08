@@ -1,47 +1,32 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Model;
+﻿using Microsoft.AspNetCore.Mvc;
 using ViewModels;
-using Services;
 using Services.Interfaces;
 
 namespace Presentation.Controllers
 {
     public class CoursesController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly ICoursesService _coursesService;
-        private readonly IMapper _mapper;
+        private readonly IGroupsService _groupsService;
 
-        public CoursesController(IUnitOfWork unitOfWork, ICoursesService coursesService, IMapper mapper)
+        public CoursesController(ICoursesService coursesService, IGroupsService groupsService)
         {
-            _unitOfWork = unitOfWork;
             _coursesService = coursesService;
-            _mapper = mapper;
+            _groupsService = groupsService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var coursesViewModel = _mapper.Map<IEnumerable<CourseViewModel>>(await _unitOfWork.CoursesRepository.GetAllAsync());
-            return View(coursesViewModel);
+            var courses = await _coursesService.GetAllAsync();
+            return View(courses);
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || await _unitOfWork.CoursesRepository.GetAllAsync() == null)
-            {
-                return NotFound();
-            }
-
-            var course = await _unitOfWork.CoursesRepository.GetByIdAsync(id.GetValueOrDefault());
+            var course = await _coursesService.GetByIdAsync(id);
             if (course == null)
-            {
                 return NotFound();
-            }
-
-            var courseViewModel = _mapper.Map<CourseViewModel>(course);
-            return View(courseViewModel);
+            return View(course);
         }
 
         public IActionResult Create()
@@ -51,107 +36,64 @@ namespace Presentation.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CourseId,Name,Description")] CourseViewModel courseViewModel)
+        public async Task<IActionResult> Create([Bind("CourseId,Name,Description")] CourseViewModel course)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.CoursesRepository.Add(_mapper.Map<Course>(courseViewModel));
-                await _unitOfWork.SaveChangesAsync();
+                await _coursesService.Add(course);
                 return RedirectToAction(nameof(Index));
             }
-            return View(courseViewModel);
+            return View(course);
         }
 
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || await _unitOfWork.CoursesRepository.GetAllAsync() == null)
-            {
-                return NotFound();
-            }
-
-            var course = await _unitOfWork.CoursesRepository.GetByIdAsync(id.GetValueOrDefault());
+            var course = await _coursesService.GetByIdAsync(id);
             if (course == null)
-            {
                 return NotFound();
-            }
-
-            var courseViewModel = _mapper.Map<CourseViewModel>(course);
-            return View(courseViewModel);
+            return View(course);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Name,Description")] CourseViewModel courseViewModel)
+        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Name,Description")] CourseViewModel course)
         {
-            if (id != courseViewModel.CourseId)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                var course = _mapper.Map<Course>(courseViewModel);
-                try
-                {
-                    _unitOfWork.CoursesRepository.Update(course);
-                    await _unitOfWork.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await _coursesService.CourseExists(course.CourseId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _coursesService.Update(course);
                 return RedirectToAction(nameof(Index));
             }
-            return View(courseViewModel);
+            return View(course);
         }
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || await _unitOfWork.CoursesRepository.GetAllAsync() == null)
-            {
-                return NotFound();
-            }
-
-            var course = await _unitOfWork.CoursesRepository.GetByIdAsync(id.GetValueOrDefault());
+            var course = await _coursesService.GetByIdAsync(id);
             if (course == null)
-            {
                 return NotFound();
-            }
-
-            var courseViewModel = _mapper.Map<CourseViewModel>(course);
-
-            return View(courseViewModel);
+            return View(course);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var groups = await _unitOfWork.GroupsRepository.GetGroupsByCourseIdAsync(id);
-            if (groups.Count > 0)
+            var groups = await _groupsService.GetGroupsByCourseIdAsync(id);
+            if (groups.Count() > 0)
             {
                 return RedirectToAction(nameof(DeleteCourseWithGroupsError), new { courseId = id });
             }
 
-            Course course = await _unitOfWork.CoursesRepository.GetByIdAsync(id);
-            _unitOfWork.CoursesRepository.Remove(course);
+            var course = await _coursesService.GetByIdAsync(id);
+            await _coursesService.Remove(course);
 
-            await _unitOfWork.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> DeleteCourseWithGroupsError(int courseId)
         {
-            var course = await _unitOfWork.CoursesRepository.GetByIdAsync(courseId);
-            var courseViewModel = _mapper.Map<CourseViewModel>(course);
-            return View(courseViewModel);
+            var course = await _coursesService.GetByIdAsync(courseId);
+            return View(course);
         }
     }
 }

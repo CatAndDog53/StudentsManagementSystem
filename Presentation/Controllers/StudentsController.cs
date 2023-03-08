@@ -1,159 +1,94 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Model;
 using ViewModels;
-using Services;
 using Services.Interfaces;
 
 namespace Presentation.Controllers
 {
     public class StudentsController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IStudentsService _studentsService;
-        private readonly IMapper _mapper;
+        private readonly IGroupsService _groupsService;
 
-        public StudentsController(IUnitOfWork unitOfWork, IStudentsService studentsService, IMapper mapper)
+        public StudentsController(IStudentsService studentsService, IGroupsService groupsService)
         {
-            _unitOfWork= unitOfWork;
             _studentsService= studentsService;
-            _mapper = mapper;
+            _groupsService = groupsService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var studentsViewModel = _mapper.Map<IEnumerable<StudentViewModel>>(await _unitOfWork.StudentsRepository.GetAllAsync());
-            return View(studentsViewModel);
+            var students = await _studentsService.GetAllAsync();
+            return View(students);
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || await _unitOfWork.StudentsRepository.GetAllAsync() == null)
-            {
-                return NotFound();
-            }
-
-            var student = await _unitOfWork.StudentsRepository.GetByIdAsync(id.GetValueOrDefault());
+            var student = await _studentsService.GetByIdAsync(id.GetValueOrDefault());
             if (student == null)
-            {
                 return NotFound();
-            }
-
-            var studentViewModel = _mapper.Map<StudentViewModel>(student);
-            return View(studentViewModel);
+            return View(student);
         }
 
         public async Task<IActionResult> Create()
         {
-            ViewBag.Groups = new SelectList(
-                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()), 
-                "GroupId", "Name");
+            ViewBag.Groups = new SelectList(await _groupsService.GetAllAsync(), "GroupId", "Name");
 
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("StudentId,GroupId,FirstName,LastName")] StudentViewModel studentViewModel)
+        public async Task<IActionResult> Create([Bind("StudentId,GroupId,FirstName,LastName")] StudentViewModel student)
         {
-            ViewBag.Groups = new SelectList(
-                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()),
-                "GroupId", "Name");
+            ViewBag.Groups = new SelectList(await _groupsService.GetAllAsync(), "GroupId", "Name");
 
             if (ModelState.IsValid)
             {
-                _unitOfWork.StudentsRepository.Add(_mapper.Map<Student>(studentViewModel));
-                await _unitOfWork.SaveChangesAsync();
+                await _studentsService.Add(student);
                 return RedirectToAction(nameof(Index));
             }
-            return View(studentViewModel);
+            return View(student);
         }
 
         public async Task<IActionResult> Edit(int? id)
         {
-            ViewBag.Groups = new SelectList(
-                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()),
-                "GroupId", "Name");
+            ViewBag.Groups = new SelectList(await _groupsService.GetAllAsync(), "GroupId", "Name");
 
-            if (id == null || await _unitOfWork.StudentsRepository.GetAllAsync() == null)
-            {
-                return NotFound();
-            }
-
-            var student = await _unitOfWork.StudentsRepository.GetByIdAsync(id.GetValueOrDefault());
+            var student = await _studentsService.GetByIdAsync(id.GetValueOrDefault());
             if (student == null)
-            {
                 return NotFound();
-            }
-
-            var studentViewModel = _mapper.Map<StudentViewModel>(student);
-            return View(studentViewModel);
+            return View(student);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("StudentId,GroupId,FirstName,LastName")] StudentViewModel studentViewModel)
+        public async Task<IActionResult> Edit(int id, [Bind("StudentId,GroupId,FirstName,LastName")] StudentViewModel student)
         {
-            ViewBag.Groups = new SelectList(
-                _mapper.Map<IEnumerable<GroupViewModel>>(await _unitOfWork.GroupsRepository.GetAllAsync()),
-                "GroupId", "Name");
-
-            if (id != studentViewModel.StudentId)
-            {
-                return NotFound();
-            }
+            ViewBag.Groups = new SelectList(await _groupsService.GetAllAsync(), "GroupId", "Name");
 
             if (ModelState.IsValid)
             {
-                var student = _mapper.Map<Student>(studentViewModel);
-                try
-                {
-                    _unitOfWork.StudentsRepository.Update(student);
-                    await _unitOfWork.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await _studentsService.StudentExists(student.StudentId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _studentsService.Update(student);
                 return RedirectToAction(nameof(Index));
             }
-            return View(studentViewModel);
+            return View(student);
         }
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || await _unitOfWork.StudentsRepository.GetAllAsync() == null)
-            {
-                return NotFound();
-            }
-
-            var student = await _unitOfWork.StudentsRepository.GetByIdAsync(id.GetValueOrDefault());
+            var student = await _studentsService.GetByIdAsync(id);
             if (student == null)
-            {
                 return NotFound();
-            }
-
-            var studentViewModel = _mapper.Map<StudentViewModel>(student);
-            return View(studentViewModel);
+            return View(student);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var student = await _unitOfWork.StudentsRepository.GetByIdAsync(id);
-            _unitOfWork.StudentsRepository.Remove(student);
-
-            await _unitOfWork.SaveChangesAsync();
+            var student = await _studentsService.GetByIdAsync(id);
+            await _studentsService.Remove(student);
             return RedirectToAction(nameof(Index));
         }
     }

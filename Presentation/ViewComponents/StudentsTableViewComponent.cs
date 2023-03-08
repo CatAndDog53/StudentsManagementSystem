@@ -2,36 +2,33 @@
 using Microsoft.AspNetCore.Mvc;
 using Model;
 using ViewModels;
-using Services;
+using Services.Interfaces;
 
 namespace Presentation.ViewComponents
 {
     public class StudentsTableViewComponent : ViewComponent
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+        private readonly IStudentsService _studentsService;
 
-        public StudentsTableViewComponent(IUnitOfWork unitOfWork, IMapper mapper)
+        public StudentsTableViewComponent(IStudentsService studentsService)
         {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            _studentsService = studentsService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync(int? groupId = null)
         {
-            IEnumerable<Student> students;
+            IEnumerable<StudentViewModel> students;
 
             if (groupId.HasValue)
             {
-                students = await _unitOfWork.StudentsRepository.GetStudentsByGroupIdAsync(groupId.Value);
+                students = await _studentsService.GetStudentsByGroupIdAsync(groupId.Value);
             }
             else
             {
-                students = await _unitOfWork.StudentsRepository.GetAllAsync();
+                students = await _studentsService.GetAllAsync();
             }
 
-            var studentsViewModel = _mapper.Map<IEnumerable<StudentViewModel>>(students);
-            return View(studentsViewModel);
+            return View(students);
         }
     }
 }

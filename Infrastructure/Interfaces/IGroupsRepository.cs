@@ -4,6 +4,6 @@ namespace Infrastructure
 {
     public interface IGroupsRepository : IRepository<Group>
     {
-        public Task<List<Group>> GetGroupsByCourseIdAsync(int courseId);
+        public Task<IEnumerable<Group>> GetGroupsByCourseIdAsync(int? courseId);
     }
 }

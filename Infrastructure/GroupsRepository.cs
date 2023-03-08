@@ -8,10 +8,12 @@ namespace Infrastructure
         public GroupsRepository(CoursesDbContext context) : base(context) 
         { }
 
-        public async Task<List<Group>> GetGroupsByCourseIdAsync(int courseId)
+        public async Task<IEnumerable<Group>> GetGroupsByCourseIdAsync(int? courseId)
         {
-            return await CoursesDbContext.Groups
-                .Where(group => group.CourseId == courseId).ToListAsync();
+            return await CoursesDbContext.Groups.
+                AsNoTracking()
+                .Where(group => group.CourseId == courseId)
+                .ToListAsync();
         }
     }
 }
