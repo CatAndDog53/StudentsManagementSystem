@@ -16,7 +16,10 @@ namespace Infrastructure
         public async Task<TEntity?> GetByIdAsync(int? id)
         {
             TEntity? entity = await _dbContext.Set<TEntity>().FindAsync(id);
-            _dbContext.Entry(entity).State = EntityState.Detached;
+            if (entity != null)
+            {
+                _dbContext.Entry(entity).State = EntityState.Detached;
+            }
             return entity;
         }
 
@@ -32,17 +35,18 @@ namespace Infrastructure
 
         public void Add(TEntity entity)
         {
-            _dbContext.Set<TEntity>().Add(entity);
+            _dbContext.Entry(entity).State = EntityState.Added;
         }
 
         public void Update(TEntity entity)
         {
-            _dbContext.Set<TEntity>().Update(entity);
+            _dbContext.Entry(entity).State = EntityState.Modified;
         }
 
         public void Remove(TEntity entity)
         {
             _dbContext.Entry(entity).State = EntityState.Deleted;
+            //_dbContext.Remove(entity);
         }
     }
 }

@@ -29,6 +29,8 @@ namespace Infrastructure
                 action.Property(course => course.Description).HasMaxLength(500);
 
                 action.HasMany(course => course.Groups);
+
+                action.Navigation(course => course.Groups).AutoInclude();
             });
         }
 
@@ -43,6 +45,7 @@ namespace Infrastructure
                     .OnDelete(DeleteBehavior.Restrict);
 
                 action.Navigation(group => group.Course).AutoInclude();
+                action.Navigation(group => group.Students).AutoInclude();
             });
         }
 
