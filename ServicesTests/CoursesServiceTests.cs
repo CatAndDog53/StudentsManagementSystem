@@ -12,7 +12,9 @@ namespace ServicesTests
         [Test]
         public async Task GetByIdAsync_ExistingIds_ReturnsCorrectCourse()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
 
             for (int i = 1; i < _databaseData.Courses.Length; i++)
             {
@@ -27,7 +29,9 @@ namespace ServicesTests
         [Test]
         public async Task GetByIdAsync_NonExistingIds_ReturnsNull()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
 
             for (int i = 0; i < _nonExistingIds.Length; i++)
             {
@@ -40,7 +44,9 @@ namespace ServicesTests
         [Test]
         public async Task GetAllAsync_ReturnsCorrectCourses()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
 
             IEnumerable<CourseViewModel> expected = _mapper.Map<IEnumerable<CourseViewModel>>(
                     _databaseData.Courses.ToList());
@@ -56,9 +62,12 @@ namespace ServicesTests
         [Test]
         public async Task Add_AddsCourse()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
+
             CourseViewModel courseExpeted = new CourseViewModel { 
-                CourseId = 225, 
+                CourseId = 225,
                 Name = "Name of the test course", 
                 Description = "Description of the test course" };
             
@@ -71,9 +80,11 @@ namespace ServicesTests
         [Test]
         public async Task Update_UpdatesCourse()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
-            CourseViewModel courseExpeted = await coursesService.GetByIdAsync(1);
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
 
+            CourseViewModel courseExpeted = await coursesService.GetByIdAsync(1);
             courseExpeted.Name = "Test";
             courseExpeted.Description = "Test";
             await coursesService.Update(courseExpeted);
@@ -88,13 +99,10 @@ namespace ServicesTests
             CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
             IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
             ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
-            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
-            IStudentsService studentsService = new StudentsService(unitOfWork, _mapper);
 
             CourseViewModel course = _mapper.Map<CourseViewModel>(
                 _databaseData.Courses.FirstOrDefault(course => course.CourseId == 1));
             await RemoveRelatedGroupsAndStudents(course);
-
             await coursesService.Remove(course);
 
             CourseViewModel removedCourse = await coursesService.GetByIdAsync(course.CourseId);
@@ -102,19 +110,23 @@ namespace ServicesTests
         }
 
         [Test]
-        public void Remove_CourseWithRelatedGroups_ThrowsException()
+        public async Task Remove_CourseWithRelatedGroups_ThrowsException()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
-            CourseViewModel courseWithRelatedGroups = _mapper.Map<CourseViewModel>(
-                _databaseData.Courses.FirstOrDefault(course => course.CourseId == 1));
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
 
-           Assert.ThrowsAsync<InvalidOperationException>(async () => await coursesService.Remove(courseWithRelatedGroups));
+            CourseViewModel courseWithRelatedGroups = await coursesService.GetByIdAsync(1);
+
+            Assert.ThrowsAsync<InvalidOperationException>(async () => await coursesService.Remove(courseWithRelatedGroups));
         }
 
         [Test]
         public async Task CourseExists_ExistingIds_ReturnsTrue()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
 
             for(int i = 0; i < _databaseData.Courses.Count(); i++)
             {
@@ -125,7 +137,9 @@ namespace ServicesTests
         [Test]
         public async Task CourseExists_NonExistingIds_ReturnsFalse()
         {
-            ICoursesService coursesService = new CoursesService(_unitOfWork, _mapper);
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
 
             for (int i = 0; i < _nonExistingIds.Length; i++)
             {
@@ -137,7 +151,6 @@ namespace ServicesTests
         {
             CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
             IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
-            ICoursesService coursesService = new CoursesService(unitOfWork, _mapper);
             IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
             IStudentsService studentsService = new StudentsService(unitOfWork, _mapper);
 
@@ -149,7 +162,6 @@ namespace ServicesTests
                 {
                     await studentsService.Remove(student);
                 }
-                //GroupViewModel groupToRemove = await groupsService.GetByIdAsync(group.GroupId);
                 await groupsService.Remove(group);
             }
         }

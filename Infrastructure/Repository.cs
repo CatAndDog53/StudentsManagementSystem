@@ -46,7 +46,6 @@ namespace Infrastructure
         public void Remove(TEntity entity)
         {
             _dbContext.Entry(entity).State = EntityState.Deleted;
-            //_dbContext.Remove(entity);
         }
     }
 }

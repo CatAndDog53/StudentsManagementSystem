@@ -30,7 +30,7 @@ namespace ServicesTests
         protected IUnitOfWork _unitOfWork;
         protected IMapper _mapper;
 
-        protected static DatabaseData _databaseData = new DatabaseData(
+        protected static readonly DatabaseData _databaseData = new DatabaseData(
             new Course[]
             {
                 new Course { CourseId = 1, Name = "C#/.Net", Description = "Basic course to learn C# and .Net platform" },
@@ -40,16 +40,16 @@ namespace ServicesTests
             new Group[]
             {
                 new Group { GroupId = 1, CourseId = 2, Name = "Java_Group_1" },
-                new Group { GroupId = 3, CourseId = 3, Name = "Angular_Group_1" },
-                new Group { GroupId = 5, CourseId = 1, Name = "C#/.Net_Group_1" }
+                new Group { GroupId = 2, CourseId = 3, Name = "Angular_Group_1" },
+                new Group { GroupId = 3, CourseId = 1, Name = "C#/.Net_Group_1" }
             },
             new Student[]
             {
                 new Student { StudentId = 1, GroupId = 1, FirstName = "Haaris", LastName = "Floyd" },
                 new Student { StudentId = 2, GroupId = 1, FirstName = "Harmony", LastName = "Chan" },
-                new Student { StudentId = 3, GroupId = 3, FirstName = "Owain", LastName = "Armstrong" },
-                new Student { StudentId = 4, GroupId = 3, FirstName = "Tyrone", LastName = "Baxter" },
-                new Student { StudentId = 5, GroupId = 5, FirstName = "Rahim", LastName = "Hensley" }
+                new Student { StudentId = 3, GroupId = 2, FirstName = "Owain", LastName = "Armstrong" },
+                new Student { StudentId = 4, GroupId = 2, FirstName = "Tyrone", LastName = "Baxter" },
+                new Student { StudentId = 5, GroupId = 3, FirstName = "Rahim", LastName = "Hensley" }
             });
 
         [SetUp]
@@ -70,7 +70,6 @@ namespace ServicesTests
         public void CleanUp()
         {
             _dbContext.Database.EnsureDeleted();
-            _unitOfWork.Dispose();
         }
 
         private void SeedDatabase()
