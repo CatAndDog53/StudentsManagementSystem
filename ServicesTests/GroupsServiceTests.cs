@@ -7,7 +7,30 @@ namespace ServicesTests
 {
     internal class GroupsServiceTests : ServiceTests
     {
+        private class GroupWithSuchNameAndIdExistsTestCase
+        {
+            public string Name { get; private set; }
+            public int Id { get; private set; }
+            public bool ExpectedResult { get; private set; }
+
+            public GroupWithSuchNameAndIdExistsTestCase(string name, int id, bool expectedResult)
+            {
+                Name = name;
+                Id = id; 
+                ExpectedResult = expectedResult;
+            }
+        }
+
         private static readonly int[] _nonExistingIds = { -5, 0, 14, 25, 1015, 4120, 10253 };
+        private static readonly string[] _nonExistingNames = { "Non-existing name 1", "Non-existing name 2" };
+        private static readonly GroupWithSuchNameAndIdExistsTestCase[] _groupWithSuchNameAndIdExistsTestCases =
+        {
+            new GroupWithSuchNameAndIdExistsTestCase(_databaseData.Groups[0].Name, _databaseData.Groups[0].GroupId, true),
+            new GroupWithSuchNameAndIdExistsTestCase(_databaseData.Groups[2].Name, _databaseData.Groups[2].GroupId, true),
+            new GroupWithSuchNameAndIdExistsTestCase(_databaseData.Groups[0].Name, 404, false),
+            new GroupWithSuchNameAndIdExistsTestCase("Non-existing name", _databaseData.Groups[0].GroupId, false),
+            new GroupWithSuchNameAndIdExistsTestCase("Non-existing name", 404, false)
+        };
 
         [Test]
         public async Task GetByIdAsync_ExistingIds_ReturnsCorrectGroup()
@@ -35,6 +58,37 @@ namespace ServicesTests
             for (int i = 0; i < _nonExistingIds.Length; i++)
             {
                 GroupViewModel? actual = await groupsService.GetByIdAsync(_nonExistingIds[i]);
+
+                Assert.IsNull(actual);
+            }
+        }
+
+        [Test]
+        public async Task GetByIdForUpdateAsync_ExistingIds_ReturnsCorrectGroup()
+        {
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
+
+            for (int i = 1; i < _databaseData.Groups.Length; i++)
+            {
+                GroupViewModelForUpdate? expected = _mapper.Map<GroupViewModelForUpdate>(_databaseData.Groups[i]);
+                GroupViewModelForUpdate? actual = await groupsService.GetByIdForUpdateAsync(_databaseData.Groups[i].GroupId);
+
+                Assert.That(actual.IsEquivalentTo(expected));
+            }
+        }
+
+        [Test]
+        public async Task GetByIdForUpdateAsync_NonExistingIds_ReturnsNull()
+        {
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
+
+            for (int i = 0; i < _nonExistingIds.Length; i++)
+            {
+                GroupViewModelForUpdate? actual = await groupsService.GetByIdForUpdateAsync(_nonExistingIds[i]);
 
                 Assert.IsNull(actual);
             }
@@ -82,7 +136,7 @@ namespace ServicesTests
         }
 
         [Test]
-        public async Task Update_UpdatesGroup()
+        public async Task Update_GroupViewModelInput_UpdatesGroup()
         {
             CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
             IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
@@ -95,6 +149,25 @@ namespace ServicesTests
             groupExpeted.Name = "Name of the test group";
 
             await groupsService.Update(groupExpeted);
+            GroupViewModel groupActual = await groupsService.GetByIdAsync(groupExpeted.GroupId);
+
+            Assert.That(groupActual.IsEquivalentTo(groupExpeted));
+        }
+
+        [Test]
+        public async Task Update_GroupViewModelForUpdateInput_UpdatesGroup()
+        {
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
+
+            GroupViewModel groupExpeted = await groupsService.GetByIdAsync(1);
+            groupExpeted.CourseId = 1;
+            groupExpeted.Course = _mapper.Map<CourseViewModel>(
+                    _databaseData.Courses.FirstOrDefault(course => course.CourseId == 1));
+            groupExpeted.Name = "Name of the test group";
+
+            await groupsService.Update(_mapper.Map<GroupViewModelForUpdate>(groupExpeted));
             GroupViewModel groupActual = await groupsService.GetByIdAsync(groupExpeted.GroupId);
 
             Assert.That(groupActual.IsEquivalentTo(groupExpeted));
@@ -152,6 +225,61 @@ namespace ServicesTests
             for (int i = 0; i < _nonExistingIds.Length; i++)
             {
                 Assert.That(await groupsService.GroupExists(_nonExistingIds[i]), Is.False);
+            }
+        }
+
+        [Test]
+        public async Task IsNameUnique_NonExistingNames_ReturnsTrue()
+        {
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
+
+            for (int i = 0; i < _nonExistingNames.Length; i++)
+            {
+                Assert.That(await groupsService.IsNameUnique(_nonExistingNames[i]), Is.True);
+            }
+        }
+
+        [Test]
+        public async Task IsNameUnique_ExistingNames_ReturnsFalse()
+        {
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
+
+            for (int i = 0; i < _databaseData.Groups.Length; i++)
+            {
+                Assert.That(await groupsService.IsNameUnique(_databaseData.Groups[i].Name), Is.False);
+            }
+        }
+
+        [Test]
+        public async Task GroupWithSuchNameAndIdExists_ExistingGroups_ReturnsTrue()
+        {
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
+
+            for (int i = 0; i < _databaseData.Groups.Length; i++)
+            {
+                var group = _databaseData.Groups[i];
+                Assert.That(await groupsService.GroupWithSuchNameAndIdExists(group.Name, group.GroupId), Is.True);
+            }
+        }
+
+        [Test]
+        public async Task GroupWithSuchNameAndIdExists_NonExistingGroups_ReturnsFalse()
+        {
+            CoursesDbContext dbContext = new CoursesDbContext(_dbContextOptions);
+            IUnitOfWork unitOfWork = new UnitOfWork(dbContext);
+            IGroupsService groupsService = new GroupsService(unitOfWork, _mapper);
+
+            for (int i = 0; i < _groupWithSuchNameAndIdExistsTestCases.Length; i++)
+            {
+                var testCase = _groupWithSuchNameAndIdExistsTestCases[i];
+                bool actualResult = await groupsService.GroupWithSuchNameAndIdExists(testCase.Name, testCase.Id);
+                Assert.That(actualResult, Is.EqualTo(testCase.ExpectedResult));
             }
         }
 

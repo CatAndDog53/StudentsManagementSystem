@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace ViewModels
 {
@@ -8,7 +9,8 @@ namespace ViewModels
         public int CourseId { get; set; }
         public CourseViewModel? Course { get; set; }
         [StringLength(30, ErrorMessage = "The maximum length for Name is 30 characters")]
-        public string Name { get; set; }
+        [Remote(action: "CheckNameUniqueness", controller: "Groups")]
+        public virtual string Name { get; set; }
         public IEnumerable<StudentViewModel> Students { get; set; } = new List<StudentViewModel>();
 
         public bool IsEquivalentTo(GroupViewModel? other)

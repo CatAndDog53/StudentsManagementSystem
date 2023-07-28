@@ -10,6 +10,8 @@ namespace Presentation.Mappings
         {
             CreateMap<Course, CourseViewModel>().ReverseMap();
             CreateMap<Group, GroupViewModel>().ReverseMap();
+            CreateMap<Group, GroupViewModelForUpdate>().ReverseMap();
+            CreateMap<GroupViewModel, GroupViewModelForUpdate>().ReverseMap();
             CreateMap<Student, StudentViewModel>().ReverseMap();
         }
     }

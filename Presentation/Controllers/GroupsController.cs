@@ -57,7 +57,7 @@ namespace Presentation.Controllers
         {
             ViewBag.Courses = new SelectList(await _coursesService.GetAllAsync(), "CourseId", "Name");
 
-            var group = await _groupsService.GetByIdAsync(id);
+            var group = await _groupsService.GetByIdForUpdateAsync(id);
             if (group == null)
                 return NotFound();
             return View(group);
@@ -65,7 +65,7 @@ namespace Presentation.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("GroupId,CourseId,Name")] GroupViewModel group)
+        public async Task<IActionResult> Edit(int id, [Bind("GroupId,CourseId,Name")] GroupViewModelForUpdate group)
         {
             ViewBag.Courses = new SelectList(await _coursesService.GetAllAsync(), "CourseId", "Name");
 
@@ -99,6 +99,31 @@ namespace Presentation.Controllers
             await _groupsService.Remove(group);
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [AcceptVerbs("GET", "POST")]
+        public IActionResult CheckNameUniqueness(string name)
+        {
+            if (!_groupsService.IsNameUnique(name).Result)
+            {
+                return Json($"Group with name '{name}' already exists!");
+            }
+
+            return Json(true);
+        }
+
+        [AcceptVerbs("GET", "POST")]
+        public IActionResult CheckIfEditedGroupWontBeDuplicate(string name, int groupId)
+        {
+            if (_groupsService.GroupWithSuchNameAndIdExists(name, groupId).Result)
+            {
+                return Json(true);
+            }
+            else if (_groupsService.IsNameUnique(name).Result)
+            {
+                return Json(true);
+            }
+            return Json($"Another group with name '{name}' already exists!");
         }
 
         public async Task<IActionResult> DeleteGroupWithStudentsError(int groupId)

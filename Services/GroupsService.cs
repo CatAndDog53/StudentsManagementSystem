@@ -22,6 +22,12 @@ namespace Services
             return _mapper.Map<GroupViewModel>(group);
         }
 
+        public async Task<GroupViewModelForUpdate> GetByIdForUpdateAsync(int? id)
+        {
+            var group = await _unitOfWork.GroupsRepository.GetByIdAsync(id);
+            return _mapper.Map<GroupViewModelForUpdate>(group);
+        }
+
         public async Task<IEnumerable<GroupViewModel>> GetAllAsync()
         {
             var groups = await _unitOfWork.GroupsRepository.GetAllAsync();
@@ -36,6 +42,13 @@ namespace Services
         }
 
         public async Task Update(GroupViewModel groupViewModel)
+        {
+            var group = _mapper.Map<Group>(groupViewModel);
+            _unitOfWork.GroupsRepository.Update(group);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task Update(GroupViewModelForUpdate groupViewModel)
         {
             var group = _mapper.Map<Group>(groupViewModel);
             _unitOfWork.GroupsRepository.Update(group);
@@ -62,6 +75,18 @@ namespace Services
                 return false;
             }
             return true;
+        }
+
+        public async Task<bool> IsNameUnique(string name)
+        {
+            var groups = await _unitOfWork.GroupsRepository.GetAllAsync();
+            return !groups.Any(group => group.Name == name);
+        }
+
+        public async Task<bool> GroupWithSuchNameAndIdExists(string name, int id)
+        {
+            var groups = await _unitOfWork.GroupsRepository.GetAllAsync();
+            return groups.Any(group => group.Name == name && group.GroupId == id);
         }
     }
 }

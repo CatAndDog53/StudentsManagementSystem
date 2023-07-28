@@ -38,6 +38,7 @@ namespace Infrastructure
         {
             modelBuilder.Entity<Group>(action =>
             {
+                action.HasIndex(group => group.Name).IsUnique();
                 action.Property(group => group.Name).HasMaxLength(30);
 
                 action.HasOne(group => group.Course).WithMany(course => course.Groups)
