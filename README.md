@@ -1,3 +1,3 @@
-# DKrokhmaliuk.Task9
+# Students Management System
 
-9th task of the FoxmindEd C#/.NET course
+
